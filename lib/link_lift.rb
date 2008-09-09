@@ -42,7 +42,7 @@ class LinkLift
   end
   
   def necessary_to_load_new_file?
-    !File.exists?(local_xml_file) || File.mtime(local_xml_file) > @timeout.hours.ago
+    !File.exists?(local_xml_file) || File.mtime(local_xml_file) > options[:timeout].hours.ago
   end
   
   def read_links
