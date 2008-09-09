@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ll_data>
+	<adspace website_key="b528b4083K0">
+		<link>
+			<url>http://www.welthungerhilfe.de/?mAeuQSwphQu6XYZG8AcEc8X8tq31XhV5n" rel="nofollow</url>
+			<text>Welthungerhilfe</text>
+			<prefix></prefix>
+			<postfix></postfix>
+			<rss_url></rss_url>
+			<rss_text></rss_text>
+			<rss_prefix></rss_prefix>
+			<rss_postfix></rss_postfix>
+			<nofollow>1</nofollow>
+		</link>
+	</adspace>
+	<adspace website_key="b528b4083K0">
+		<link>
+			<url>http://www.google.org" rel="nofollow</url>
+			<text>Google saves the world</text>
+			<prefix>BAR</prefix>
+			<postfix>FOO</postfix>
+			<rss_url></rss_url>
+			<rss_text></rss_text>
+			<rss_prefix></rss_prefix>
+			<rss_postfix></rss_postfix>
+			<nofollow>1</nofollow>
+		</link>
+	</adspace>
+	<adspace website_key="b528b4083K0">
+		<link>
+			<url>http://www.foobar.org</url>
+			<text>Google saves the world</text>
+			<prefix>BAR</prefix>
+			<postfix>FOO</postfix>
+			<rss_url></rss_url>
+			<rss_text></rss_text>
+			<rss_prefix></rss_prefix>
+			<rss_postfix></rss_postfix>
+			<nofollow>0</nofollow>
+		</link>
+	</adspace>
+</ll_data>

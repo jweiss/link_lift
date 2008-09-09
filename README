@@ -1,0 +1,33 @@
+Linklift
+========
+
+Ruby on Rails plugin to display advertisement links from LinkLift.{de|es|fr|it|pl}.
+
+Notice: Currently only tested with LinkLift.de!
+
+
+Installation and Usage
+=======
+
+ruby script/plugin install git://github.com/jweiss/link_lift.git
+
+Then call LinkLift.new to get the links, e.g. in your application_helper.rb:
+
+  def link_lift_links
+    l = LinkLift.new(:website_key => LINK_LIFT_KEY, 
+                     :plugin_secret => LINK_LIFT_SECRET)
+
+    l.links.map do |link|
+      "<a href='#{link.url}' rel='#{link.no_follow? ? 'nofollow' : ''}'>#{link.text}</a>"  
+    end.join(' ')
+
+  rescue => e
+    # handle timeouts&co
+  end
+  
+  
+By default the LinkLift XML file will be downloaded every hour (or choose another timeout with the :timeout parameter) 
+and will be stored under public/#{website_key}.xml (set by the :filename option).
+
+Copyright (c) 2008 Jonathan Weiss, released under the MIT license
+Based on the LinkLift mephisto plugin of Thomas R. Koll 
