@@ -2,6 +2,7 @@ require 'net/http'
 require 'rubygems'
 require "rexml/document"
 require 'tmpdir'
+require 'active_support'
 
 class LinkLift
   
@@ -50,7 +51,7 @@ class LinkLift
     if necessary_to_load_new_file?
       data = retrieve_links
     else
-      data = File.new(local_xml_file)
+      data = File.read(local_xml_file)
     end
 
     xml_feed = REXML::Document.new(data, :respect_whitespace => false)
@@ -82,9 +83,10 @@ class LinkLift
       'condition_no_css' => 0,
       'condition_no_html_tags' => 0 }.collect{|a,b| [a,b].join('=')}.join('&')
       )
-    xml_file = File.new(local_xml_file, 'w+')
-    xml_file << result
-    xml_file.close
+    File.open(local_xml_file, 'w+') do |f|
+      f.flock File::LOCK_EX
+      f << result
+    end
     return result
   rescue Object => e
     raise LinkLiftError, e
