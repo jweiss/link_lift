@@ -3,6 +3,7 @@ require 'rubygems'
 require "rexml/document"
 require 'tmpdir'
 require 'active_support'
+require 'thread'
 
 class LinkLift
   
@@ -11,6 +12,7 @@ class LinkLift
   SERVER_HOST = 'external.linklift.net'
   PLUGIN_VERSION = '0.1'
   PLUGIN_DATE = '20080311'
+  SEMAPHORE = Mutex.new
   
   if defined?(RAILS_ROOT) 
     TMP_DIR = RAILS_ROOT + '/public/'
@@ -48,10 +50,13 @@ class LinkLift
   def read_links
     links = []
 
-    if necessary_to_load_new_file?
-      data = retrieve_links
-    else
-      data = File.read(local_xml_file)
+    data = nil
+    SEMAPHORE.synchronize do
+      if necessary_to_load_new_file?
+        data = retrieve_links
+      else
+        data = File.read(local_xml_file)
+      end
     end
 
     xml_feed = REXML::Document.new(data, :respect_whitespace => false)
