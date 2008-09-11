@@ -14,10 +14,15 @@ class LinkLiftTest < Test::Unit::TestCase
 
   def setup
     @expected_link_lift_result = File.read("#{File.dirname(__FILE__)}/link_lift_result.xml")
+    @expected_link_lift_result_complex = File.read("#{File.dirname(__FILE__)}/link_lift_result_complex.xml")
 
     Dir.glob("#{TMP_PATH}/*.xml").each do |f|
       FileUtils.rm f
     end
+  end
+  
+  def teardown
+    LinkLift.reset_last_xml_update
   end
 
   def test_validations
@@ -67,7 +72,7 @@ class LinkLiftTest < Test::Unit::TestCase
     
     l = LinkLift.new(:website_key => 'foo', :plugin_secret => 'bar')
     
-    expected_links = ['http://www.welthungerhilfe.de/?mAeuQSwphQu6XYZG8AcEc8X8tq31XhV5n', 'http://www.google.org', 'http://www.foobar.org']
+    expected_links = ['http://www.foobar.org']
     assert_equal expected_links.sort, l.links.map(&:url).sort
   end
   
@@ -75,6 +80,30 @@ class LinkLiftTest < Test::Unit::TestCase
     Net::HTTP.expects(:get).returns(@expected_link_lift_result)
     l = LinkLift.new(:website_key => 'foo', :plugin_secret => 'bar', :filename => 'dr.metschke.xml')
     assert_equal "#{TMP_PATH}/dr.metschke.xml", l.local_xml_file
+  end
+  
+  def test_complex_link_lift_result
+     Net::HTTP.expects(:get).returns(@expected_link_lift_result_complex)
+
+      l = LinkLift.new(:website_key => 'foo', :plugin_secret => 'bar')
+
+      expected_links = ["http://www.headcrash.net",
+       "http://www.kredit-engel.de",
+       "http://www.magistrix.de",
+       "http://www.poplexikon.com",
+       "http://www.ready2host.de/SSL-Zertifikate"]
+      assert_equal expected_links.sort, l.links.map(&:url).sort
+  end
+  
+  def test_update_of_inmemory_timestamp_of_last_update
+    Net::HTTP.expects(:get).returns(@expected_link_lift_result_complex).times(1)
+    Time.stubs(:now).returns(Time.local(2008, 9, 28))
+    
+    l = LinkLift.new(:website_key => 'foo', :plugin_secret => 'bar')
+    assert_equal Time.local(2008, 9, 28), LinkLift.last_xml_update
+    
+    # now create another LinkLift instance - this one should not call Net::HTTP
+    other = LinkLift.new(:website_key => 'foo', :plugin_secret => 'bar')
   end
 
 

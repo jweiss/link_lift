@@ -13,6 +13,8 @@ class LinkLift
   PLUGIN_VERSION = '0.1'
   PLUGIN_DATE = '20080311'
   SEMAPHORE = Mutex.new
+  @@last_xml_update = Time.local(1971)
+  
   
   if defined?(RAILS_ROOT) 
     TMP_DIR = RAILS_ROOT + '/public/'
@@ -44,7 +46,15 @@ class LinkLift
   end
   
   def necessary_to_load_new_file?
-    !File.exists?(local_xml_file) || File.mtime(local_xml_file) > @options[:timeout].hours.ago
+    not (last_remote_check_current? || local_xml_file_current?)
+  end
+  
+  def last_remote_check_current?
+    self.class.last_xml_update() > @options[:timeout].hours.ago
+  end
+  
+  def local_xml_file_current?
+    File.exists?(local_xml_file) && File.mtime(local_xml_file) <= @options[:timeout].hours.ago
   end
   
   def read_links
@@ -70,7 +80,7 @@ class LinkLift
       
       new_link.url = handle_url(link.elements['url'].text)
       
-      links << new_link
+      links << new_link unless new_link.no_follow?
     end
     return links
   rescue Object => e
@@ -88,17 +98,37 @@ class LinkLift
       'condition_no_css' => 0,
       'condition_no_html_tags' => 0 }.collect{|a,b| [a,b].join('=')}.join('&')
       )
-    File.open(local_xml_file, 'w+') do |f|
-      f.flock File::LOCK_EX
-      f << result
-    end
+    
+    update_local_xml_file(result)
     return result
   rescue Object => e
     raise LinkLiftError, e
   end
   
+  def update_local_xml_file(data)
+    @@last_xml_update = Time.now
+    
+    # write the data to a temp file
+    temp_file = "#{Dir.tmpdir}/link_lift_data_#{$$}.xml"
+    File.open(temp_file, 'w+') do |f|
+      f.flock File::LOCK_EX
+      f << data
+    end
+    
+    # swap the files
+    FileUtils.mv(temp_file, local_xml_file)
+  end
+  
   def handle_url(broken_url)
     return broken_url.gsub(/" rel="nofollow\Z/, '')
+  end
+  
+  def self.last_xml_update
+    @@last_xml_update
+  end
+  
+  def self.reset_last_xml_update
+    @@last_xml_update = Time.local(1971)
   end
   
   class Link
