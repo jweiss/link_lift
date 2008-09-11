@@ -30,7 +30,8 @@ class LinkLift
     
     @options = {
       :filename => nil,
-      :timeout => 1,
+      :timeout => 1, # in hours
+      :show_test_link => false
     }.update(options)
     
     @links = read_links
@@ -71,8 +72,8 @@ class LinkLift
 
     xml_feed = REXML::Document.new(data, :respect_whitespace => false)
     
-    xml_feed.elements.each("ll_data/adspace/link/") do |link|
-      #next if link.elements['url'].text =~ /#{@options[:plugin_secret]}/
+    xml_feed.elements.each("ll_data/adspace/link/") do |link|  
+
       new_link = Link.new
       %w(text prefix postfix rss_url rss_text rss_prefix rss_postfix nofollow).each do |node_name|
         new_link.send("#{node_name}=", link.elements[node_name].text)
@@ -80,17 +81,21 @@ class LinkLift
       
       new_link.url = handle_url(link.elements['url'].text)
       
-      links << new_link unless new_link.no_follow?
+      links << new_link unless (test_link?(new_link) && !@options[:show_test_link])
     end
     return links
   rescue Object => e
     raise LinkLiftError, e
   end
+  
+  def test_link?(link)
+    link.url.match(@options[:plugin_secret])
+  end
 
   def retrieve_links
     result = Net::HTTP.get(SERVER_HOST, '/external/textlink_data.php5?' + {
       'website_key' => @options[:website_key],
-      'linklift' => @options[:plugin_secret],
+      'linklift_secret' => @options[:plugin_secret],
       'plugin_language' => 'ruby',
       'plugin_date' => '20080311',
       'plugin_version' => VERSION,
