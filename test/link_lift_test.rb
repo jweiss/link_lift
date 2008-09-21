@@ -21,10 +21,6 @@ class LinkLiftTest < Test::Unit::TestCase
     end
   end
   
-  def teardown
-    LinkLift.reset_last_xml_update
-  end
-
   def test_validations
     assert_raise(ArgumentError) do
       LinkLift.new
@@ -102,17 +98,6 @@ class LinkLiftTest < Test::Unit::TestCase
        "http://www.poplexikon.com",
        "http://www.ready2host.de/SSL-Zertifikate"]
       assert_equal expected_links.sort, l.links.map(&:url).sort
-  end
-  
-  def test_update_of_inmemory_timestamp_of_last_update
-    Net::HTTP.expects(:get).returns(@expected_link_lift_result_complex).times(1)
-    Time.stubs(:now).returns(Time.local(2008, 9, 28))
-    
-    l = LinkLift.new(:website_key => 'foo', :plugin_secret => '57575751')
-    assert_equal Time.local(2008, 9, 28), LinkLift.last_xml_update
-    
-    # now create another LinkLift instance - this one should not call Net::HTTP
-    other = LinkLift.new(:website_key => 'foo', :plugin_secret => '57575751')
   end
   
 end

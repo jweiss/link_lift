@@ -13,8 +13,6 @@ class LinkLift
   PLUGIN_VERSION = '0.1'
   PLUGIN_DATE = '20080311'
   SEMAPHORE = Mutex.new
-  @@last_xml_update = Time.local(1971)
-  
   
   if defined?(RAILS_ROOT) 
     TMP_DIR = RAILS_ROOT + '/public/'
@@ -47,13 +45,9 @@ class LinkLift
   end
   
   def necessary_to_load_new_file?
-    not (last_remote_check_current? || local_xml_file_current?)
+    not local_xml_file_current?
   end
-  
-  def last_remote_check_current?
-    self.class.last_xml_update() > @options[:timeout].hours.ago
-  end
-  
+    
   def local_xml_file_current?
     File.exists?(local_xml_file) && File.mtime(local_xml_file) <= @options[:timeout].hours.ago
   end
@@ -110,9 +104,7 @@ class LinkLift
     raise LinkLiftError, e.message, e.backtrace
   end
   
-  def update_local_xml_file(data)
-    @@last_xml_update = Time.now
-    
+  def update_local_xml_file(data)    
     # write the data to a temp file
     temp_file = "#{Dir.tmpdir}/link_lift_data_#{$$}.xml"
     File.open(temp_file, 'w+') do |f|
@@ -126,14 +118,6 @@ class LinkLift
   
   def handle_url(broken_url)
     return broken_url.gsub(/" rel="nofollow\Z/, '')
-  end
-  
-  def self.last_xml_update
-    @@last_xml_update
-  end
-  
-  def self.reset_last_xml_update
-    @@last_xml_update = Time.local(1971)
   end
   
   class Link
