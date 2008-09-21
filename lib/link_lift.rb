@@ -49,7 +49,7 @@ class LinkLift
   end
     
   def local_xml_file_current?
-    File.exists?(local_xml_file) && File.mtime(local_xml_file) <= @options[:timeout].hours.ago
+    File.exists?(local_xml_file) && File.mtime(local_xml_file) > @options[:timeout].hours.ago
   end
   
   def read_links
