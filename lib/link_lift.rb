@@ -85,7 +85,7 @@ class LinkLift
     end
     return links
   rescue Object => e
-    raise LinkLiftError, e
+    raise LinkLiftError, e.message, e.backtrace
   end
   
   def test_link?(link)
@@ -107,7 +107,7 @@ class LinkLift
     update_local_xml_file(result)
     return result
   rescue Object => e
-    raise LinkLiftError, e
+    raise LinkLiftError, e.message, e.backtrace
   end
   
   def update_local_xml_file(data)
