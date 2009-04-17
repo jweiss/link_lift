@@ -4,6 +4,7 @@ require "rexml/document"
 require 'tmpdir'
 require 'active_support'
 require 'thread'
+require 'timeout'
 
 class LinkLift
   
@@ -87,16 +88,21 @@ class LinkLift
   end
 
   def retrieve_links
-    result = Net::HTTP.get(SERVER_HOST, '/external/textlink_data.php5?' + {
-      'website_key' => @options[:website_key],
-      'linklift_secret' => @options[:plugin_secret],
-      'plugin_language' => 'ruby',
-      'plugin_date' => '20080311',
-      'plugin_version' => VERSION,
-      'plugin_creation_date' => '20080311',
-      'condition_no_css' => 0,
-      'condition_no_html_tags' => 0 }.collect{|a,b| [a,b].join('=')}.join('&')
-      )
+    result = nil
+    status = false
+    status = Timeout::timeout(5) do
+      result = Net::HTTP.get(SERVER_HOST, '/external/textlink_data.php5?' + {
+        'website_key' => @options[:website_key],
+        'linklift_secret' => @options[:plugin_secret],
+        'plugin_language' => 'ruby',
+        'plugin_date' => '20080311',
+        'plugin_version' => VERSION,
+        'plugin_creation_date' => '20080311',
+        'condition_no_css' => 0,
+        'condition_no_html_tags' => 0 }.collect{|a,b| [a,b].join('=')}.join('&')
+        )
+    end
+    raise "Linklift timed out...." unless status
     
     update_local_xml_file(result)
     return result

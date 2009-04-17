@@ -100,4 +100,11 @@ class LinkLiftTest < Test::Unit::TestCase
       assert_equal expected_links.sort, l.links.map(&:url).sort
   end
   
+  def test_timeout
+    Timeout.expects(:timeout).raises(Timeout::Error)
+    assert_raise(LinkLift::LinkLiftError) do
+      LinkLift.new(:website_key => 'foo', :plugin_secret => '57575751').inspect
+    end
+  end
+  
 end
